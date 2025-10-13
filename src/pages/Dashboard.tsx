@@ -7,22 +7,27 @@ import { conversationsService, messagesService } from '../services/convsersation
 import { socketService } from '../services/socket';
 import { authService } from '../services/auth';
 import type { Conversation, Message, User } from '../types';
-import { useAuth } from '../context/AuthContext';
 
 export const Dashboard: React.FC = () => {
-  const { user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
+  const [viewFilter, setViewFilter] = useState<'all' | 'mine'>('all');
 
   // Load conversations and users
   useEffect(() => {
     loadConversations();
     loadUsers();
   }, []);
+
+  // Reload conversations when filter changes
+  useEffect(() => {
+    loadConversations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewFilter]);
 
   const loadUsers = async () => {
     try {
@@ -71,7 +76,10 @@ export const Dashboard: React.FC = () => {
   const loadConversations = async () => {
     try {
       setLoading(true);
-      const data = await conversationsService.getAll();
+      const data =
+        viewFilter === 'mine'
+          ? await conversationsService.getMyConversations()
+          : await conversationsService.getAll();
       setConversations(data);
     } catch (error) {
       console.error('Failed to load conversations:', error);
@@ -150,8 +158,32 @@ export const Dashboard: React.FC = () => {
         {/* Conversations List */}
         <div className="w-80 bg-white border-r border-gray-200 overflow-hidden flex flex-col">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold">Conversations</h2>
-            <p className="text-sm text-gray-500">{conversations.length} total</p>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Conversations</h2>
+            </div>
+            <div className="mt-2 flex items-center justify-between">
+              <p className="text-sm text-gray-500">
+                {conversations.length} {viewFilter === 'mine' ? 'assigned to me' : 'total'}
+              </p>
+              <div className="inline-flex rounded-md shadow-sm" role="group">
+                <button
+                  onClick={() => setViewFilter('all')}
+                  className={`px-3 py-1 text-sm border ${
+                    viewFilter === 'all' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 border-gray-300'
+                  } rounded-l`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => setViewFilter('mine')}
+                  className={`px-3 py-1 text-sm border ${
+                    viewFilter === 'mine' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 border-gray-300'
+                  } rounded-r`}
+                >
+                  My
+                </button>
+              </div>
+            </div>
           </div>
           <ConversationList
               conversations={conversations}
