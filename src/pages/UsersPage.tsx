@@ -43,15 +43,6 @@ export const UsersPage: React.FC = () => {
     }
   };
 
-  const handleRoleUpdate = async (userId: number, newRole: 'admin' | 'agent') => {
-    try {
-      await authService.updateUserRole(userId, { role: newRole });
-      loadUsers();
-      setEditingUser(null);
-    } catch (error) {
-      console.error('Failed to update role:', error);
-    }
-  };
 
   const handleEditUser = async (userId: number) => {
     try {

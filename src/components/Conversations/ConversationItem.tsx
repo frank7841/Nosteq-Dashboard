@@ -14,8 +14,6 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
   conversation,
   isSelected,
   onClick,
-  users,
-  onAssign,
 }) => {
   return (
     <div
