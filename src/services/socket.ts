@@ -9,6 +9,13 @@ export const socketService = {
     if (!socket) {
       socket = io(WS_URL, {
         auth: { token },
+        transports: ['websocket'],
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+        withCredentials: true,
+        // If your server is mounted under a custom path, uncomment and set it:
+        // path: '/socket.io',
       });
 
       socket.on('connect', () => {
@@ -24,6 +31,8 @@ export const socketService = {
 
   disconnect: () => {
     if (socket) {
+      // Ensure no duplicate handlers next time we connect
+      socket.removeAllListeners();
       socket.disconnect();
       socket = null;
     }
@@ -41,21 +50,40 @@ export const socketService = {
     }
   },
 
+  // Safe subscription helpers that de-duplicate by removing before adding
   onNewMessage: (callback: (message: any) => void) => {
     if (socket) {
+      socket.off('new_message', callback);
       socket.on('new_message', callback);
+    }
+  },
+  offNewMessage: (callback: (message: any) => void) => {
+    if (socket) {
+      socket.off('new_message', callback);
     }
   },
 
   onNewConversation: (callback: (conversation: any) => void) => {
     if (socket) {
+      socket.off('new_conversation', callback);
       socket.on('new_conversation', callback);
+    }
+  },
+  offNewConversation: (callback: (conversation: any) => void) => {
+    if (socket) {
+      socket.off('new_conversation', callback);
     }
   },
 
   onConversationUpdate: (callback: (update: any) => void) => {
     if (socket) {
+      socket.off('conversation_update', callback);
       socket.on('conversation_update', callback);
+    }
+  },
+  offConversationUpdate: (callback: (update: any) => void) => {
+    if (socket) {
+      socket.off('conversation_update', callback);
     }
   },
 

@@ -41,32 +41,39 @@ export const Dashboard: React.FC = () => {
   // Set up WebSocket listeners
   useEffect(() => {
     const socket = socketService.getSocket();
-    
-    if (socket) {
-      socketService.onNewMessage((message: Message) => {
-        // Add message to current conversation if it matches
-        if (selectedConversation && message.conversationId === selectedConversation.id) {
-          setMessages((prev) => [...prev, message]);
-        }
-        
-        // Update conversation list
-        loadConversations();
-      });
 
-      socketService.onNewConversation((conversation: Conversation) => {
-        setConversations((prev) => [conversation, ...prev]);
-      });
+    if (!socket) return;
 
-      socketService.onConversationUpdate((update) => {
-        setConversations((prev) =>
-          prev.map((conv) =>
-            conv.id === update.conversationId ? { ...conv, ...update } : conv
-          )
-        );
-      });
-    }
+    const handleNewMessage = (message: Message) => {
+      // If viewing this conversation, append without duplicates
+      if (selectedConversation && message.conversationId === selectedConversation.id) {
+        setMessages((prev) => (prev.some((m) => m.id === message.id) ? prev : [...prev, message]));
+      }
+      // Refresh the conversations list (e.g., lastMessageAt)
+      loadConversations();
+    };
+
+    const handleNewConversation = (conversation: Conversation) => {
+      setConversations((prev) => [conversation, ...prev]);
+    };
+
+    const handleConversationUpdate = (update: Partial<Conversation> & { conversationId: number }) => {
+      setConversations((prev) =>
+        prev.map((conv) => (conv.id === update.conversationId ? { ...conv, ...update } : conv))
+      );
+    };
+
+    socketService.onNewMessage(handleNewMessage);
+    socketService.onNewConversation(handleNewConversation);
+    socketService.onConversationUpdate(handleConversationUpdate);
 
     return () => {
+      // Remove listeners to avoid duplicates after re-renders
+      socketService.offNewMessage(handleNewMessage);
+      socketService.offNewConversation(handleNewConversation);
+      socketService.offConversationUpdate(handleConversationUpdate);
+
+      // Leave room for previously selected conversation
       if (selectedConversation) {
         socketService.leaveConversation(selectedConversation.id);
       }
@@ -104,10 +111,10 @@ export const Dashboard: React.FC = () => {
     }
 
     setSelectedConversation(conversation);
-    
+
     // Join new conversation
     socketService.joinConversation(conversation.id);
-    
+
     // Load messages
     await loadMessages(conversation.id);
   };
@@ -124,7 +131,8 @@ export const Dashboard: React.FC = () => {
         phoneNumber: selectedConversation.customer.phoneNumber,
       });
 
-      setMessages((prev) => [...prev, newMessage]);
+      // De-duplicate optimistic append (in case server echo comes via socket)
+      setMessages((prev) => (prev.some((m) => m.id === newMessage.id) ? prev : [...prev, newMessage]));
     } catch (error) {
       console.error('Failed to send message:', error);
       alert('Failed to send message. Please try again.');
