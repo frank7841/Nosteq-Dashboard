@@ -25,6 +25,12 @@ export const Dashboard: React.FC = () => {
 
   // Reload conversations when filter changes
   useEffect(() => {
+    // If changing filter, clear any current selection/messages to avoid stale display
+    if (selectedConversation) {
+      socketService.leaveConversation(selectedConversation.id);
+    }
+    setSelectedConversation(null);
+    setMessages([]);
     loadConversations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewFilter]);
@@ -88,6 +94,11 @@ export const Dashboard: React.FC = () => {
           ? await conversationsService.getMyConversations()
           : await conversationsService.getAll();
       setConversations(data);
+      // If current selection is not in the new list, clear selection/messages
+      if (selectedConversation && !data.some((c) => c.id === selectedConversation.id)) {
+        setSelectedConversation(null);
+        setMessages([]);
+      }
     } catch (error) {
       console.error('Failed to load conversations:', error);
     } finally {
