@@ -1,17 +1,21 @@
 import React from 'react';
-import type { Conversation } from '../../types';
+import type { Conversation, User } from '../../types';
 import { formatDistanceToNow } from 'date-fns';
 
 interface ConversationItemProps {
   conversation: Conversation;
   isSelected: boolean;
-  onClick: () => void;
+  onClick: React.MouseEventHandler<HTMLDivElement>;
+  users: User[];
+  onAssign: (userId: number) => void;
 }
 
 export const ConversationItem: React.FC<ConversationItemProps> = ({
   conversation,
   isSelected,
   onClick,
+  users,
+  onAssign,
 }) => {
   return (
     <div

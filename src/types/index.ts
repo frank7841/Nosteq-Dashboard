@@ -10,6 +10,7 @@ export interface User {
     id: number;
     phoneNumber: string;
     name: string;
+    email?: string;
     profilePicUrl?: string;
     lastMessageAt: string;
   }

@@ -1,17 +1,21 @@
 import React from 'react';
-import type { Conversation } from '../../types';
+import type { Conversation, User } from '../../types';
 import { ConversationItem } from './ConversationItem';
 
 interface ConversationListProps {
   conversations: Conversation[];
   selectedConversationId?: number;
   onSelectConversation: (conversation: Conversation) => void;
+  users: User[];
+  onAssignConversation: (conversationId: number, assigneeId: number) => void;
 }
 
 export const ConversationList: React.FC<ConversationListProps> = ({
   conversations,
   selectedConversationId,
   onSelectConversation,
+  users,
+  onAssignConversation,
 }) => {
   if (conversations.length === 0) {
     return (
@@ -25,10 +29,12 @@ export const ConversationList: React.FC<ConversationListProps> = ({
     <div className="overflow-y-auto h-full">
       {conversations.map((conversation) => (
         <ConversationItem
-          key={conversation.id}
-          conversation={conversation}
-          isSelected={conversation.id === selectedConversationId}
-          onClick={() => onSelectConversation(conversation)}
+        key={conversation.id}
+        conversation={conversation}
+        isSelected={conversation.id === selectedConversationId}
+        onClick={() => onSelectConversation(conversation)}
+        users={users}
+        onAssign={(userId) => onAssignConversation(conversation.id, userId)}
         />
       ))}
     </div>

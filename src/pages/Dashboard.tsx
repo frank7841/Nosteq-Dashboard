@@ -5,7 +5,8 @@ import { MessageList } from '../components/Messages/MessageList';
 import { MessageInput } from '../components/Messages/MessageInput';
 import { conversationsService, messagesService } from '../services/convsersations';
 import { socketService } from '../services/socket';
-import type { Conversation, Message } from '../types';
+import { authService } from '../services/auth';
+import type { Conversation, Message, User } from '../types';
 import { useAuth } from '../context/AuthContext';
 
 export const Dashboard: React.FC = () => {
@@ -15,11 +16,22 @@ export const Dashboard: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
 
-  // Load conversations
+  // Load conversations and users
   useEffect(() => {
     loadConversations();
+    loadUsers();
   }, []);
+
+  const loadUsers = async () => {
+    try {
+      const data = await authService.getAllUsers();
+      setUsers(data);
+    } catch (error) {
+      console.error('Failed to load users:', error);
+    }
+  };
 
   // Set up WebSocket listeners
   useEffect(() => {
@@ -113,6 +125,15 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const handleAssignConversation = async (conversationId: number, userId: number) => {
+    try {
+      await conversationsService.assignToUser(conversationId, userId);
+      loadConversations();
+    } catch (error) {
+      console.error('Failed to assign conversation:', error);
+    }
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -133,9 +154,11 @@ export const Dashboard: React.FC = () => {
             <p className="text-sm text-gray-500">{conversations.length} total</p>
           </div>
           <ConversationList
-            conversations={conversations}
-            selectedConversationId={selectedConversation?.id}
-            onSelectConversation={handleSelectConversation}
+              conversations={conversations}
+              selectedConversationId={selectedConversation?.id}
+              onSelectConversation={handleSelectConversation}
+              users={users}
+              onAssignConversation={handleAssignConversation}
           />
         </div>
 

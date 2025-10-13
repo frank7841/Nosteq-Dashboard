@@ -5,6 +5,8 @@ import { ProtectedRoute } from './components/Auth/ProtectedRoute';
 import { LoginPage } from './pages/LoginPage';
 import { Dashboard } from './pages/Dashboard';
 import { UsersPage } from './pages/UsersPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { CustomersPage } from './pages/CustomersPage';
 
 function App() {
   return (
@@ -25,6 +27,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <UsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customers"
+            element={
+              <ProtectedRoute>
+                <CustomersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
               </ProtectedRoute>
             }
           />

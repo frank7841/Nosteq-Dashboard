@@ -22,7 +22,10 @@ export const Sidebar: React.FC = () => {
       </div>
 
       <nav className="flex-1 p-4">
-        <button className="w-full flex items-center px-4 py-3 bg-green-600 rounded-lg mb-2 hover:bg-green-700 transition">
+        <button
+          onClick={() => navigate('/')}
+          className="w-full flex items-center px-4 py-3 bg-green-600 rounded-lg mb-2 hover:bg-green-700 transition"
+        >
           <MessageSquare className="w-5 h-5 mr-3" />
           <span>Conversations</span>
         </button>
@@ -37,7 +40,20 @@ export const Sidebar: React.FC = () => {
           </button>
         )}
 
-        <button className="w-full flex items-center px-4 py-3 rounded-lg hover:bg-gray-800 transition">
+        {user?.role === 'admin' && (
+          <button
+            onClick={() => navigate('/customers')}
+            className="w-full flex items-center px-4 py-3 rounded-lg mb-2 hover:bg-gray-800 transition"
+          >
+            <Users className="w-5 h-5 mr-3" />
+            <span>Customers</span>
+          </button>
+        )}
+
+        <button
+          onClick={() => navigate('/settings')}
+          className="w-full flex items-center px-4 py-3 rounded-lg hover:bg-gray-800 transition"
+        >
           <Settings className="w-5 h-5 mr-3" />
           <span>Settings</span>
         </button>
