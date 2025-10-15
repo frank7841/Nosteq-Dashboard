@@ -152,6 +152,25 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const handleMediaSent = (mediaMessage: any) => {
+    // Add the media message to the message list immediately
+    console.log('Media message received:', mediaMessage);
+    
+    // If the response contains a message object, add it to the messages
+    if (mediaMessage && mediaMessage.id) {
+      setMessages((prev) => {
+        // De-duplicate in case the message already exists
+        const exists = prev.some((m) => m.id === mediaMessage.id);
+        return exists ? prev : [...prev, mediaMessage];
+      });
+    } else {
+      // If no message object returned, refresh the entire message list
+      if (selectedConversation) {
+        loadMessages(selectedConversation.id);
+      }
+    }
+  };
+
   const handleAssignConversation = async (conversationId: number, userId: number) => {
     try {
       await conversationsService.assignToUser(conversationId, userId);
@@ -221,6 +240,10 @@ export const Dashboard: React.FC = () => {
               <MessageInput
                 onSendMessage={handleSendMessage}
                 disabled={sendingMessage}
+                conversationId={selectedConversation.id}
+                customerId={selectedConversation.customerId}
+                phoneNumber={selectedConversation.customer.phoneNumber}
+                onMediaSent={handleMediaSent}
               />
             </>
           ) : (
