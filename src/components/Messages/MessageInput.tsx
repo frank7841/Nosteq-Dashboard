@@ -132,7 +132,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
     {/* Drag & Drop Zone */}
     {showDropZone && conversationId && customerId && phoneNumber && (
-      <div className="border-t border-gray-200 bg-white">
+      <div className="border-t border-gray-200 bg-white h-full">
         <div className="flex justify-between items-center px-3 md:px-4 py-3 bg-gray-50 border-b border-gray-200">
           <h4 className="text-sm md:text-base font-semibold text-gray-800">Drag & Drop Upload</h4>
           <button 
@@ -143,7 +143,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             <X size={20} />
           </button>
         </div>
-        <div className="p-3 md:p-4">
+        <div className="p-3 md:p-4 ">
           <MediaDropZone
             conversationId={conversationId}
             customerId={customerId}

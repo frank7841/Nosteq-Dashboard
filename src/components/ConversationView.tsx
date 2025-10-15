@@ -181,14 +181,14 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, onC
               }`}>
                 {message.mediaUrl ? (
                   <div className="flex flex-col gap-2">
-                    {message.mediaType === 'image' && (
+                    {message.messageType === 'image' && (
                       <img 
                         src={message.mediaUrl} 
                         alt={message.content || 'Image'} 
                         className="max-w-[300px] max-h-[200px] rounded-lg object-cover"
                       />
                     )}
-                    {message.mediaType === 'document' && (
+                    {message.messageType === 'document' && (
                       <div className="flex items-center gap-2 p-2 bg-black bg-opacity-10 rounded-lg">
                         <div className="text-2xl">📄</div>
                         <a 
@@ -201,13 +201,13 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, onC
                         </a>
                       </div>
                     )}
-                    {message.mediaType === 'audio' && (
+                    {message.messageType === 'audio' && (
                       <audio controls className="max-w-[300px] rounded-lg">
                         <source src={message.mediaUrl} type="audio/mpeg" />
                         Your browser does not support the audio element.
                       </audio>
                     )}
-                    {message.mediaType === 'video' && (
+                    {message.messageType === 'video' && (
                       <video controls className="max-w-[300px] rounded-lg">
                         <source src={message.mediaUrl} type="video/mp4" />
                         Your browser does not support the video element.

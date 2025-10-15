@@ -129,7 +129,7 @@ const MediaDropZone: React.FC<MediaDropZoneProps> = ({
   };
 
   return (
-    <div className={`w-full max-w-2xl mx-auto ${className}`}>
+    <div className={`w-full max-w-2xl mx-auto h-auto ${className}`}>
       {/* Drop Area */}
       <div
         className={`relative min-h-[200px] border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 flex items-center justify-center ${
