@@ -21,14 +21,14 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
 
   if (messages.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
-        <p>No messages yet. Start the conversation!</p>
+      <div className="flex items-center justify-center h-full text-gray-500 px-4">
+        <p className="text-center text-sm md:text-base">No messages yet. Start the conversation!</p>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+    <div className="flex-1 overflow-y-auto p-2 md:p-4 bg-gray-50 overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' }}>
       {messages.map((message, index) => {
         const showDate =
           index === 0 ||
@@ -38,8 +38,8 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
         return (
           <React.Fragment key={message.id}>
             {showDate && (
-              <div className="flex justify-center my-4">
-                <span className="bg-white px-4 py-1 rounded-full text-xs text-gray-600 border border-gray-200">
+              <div className="flex justify-center my-3 md:my-4">
+                <span className="bg-white px-3 md:px-4 py-1 rounded-full text-xs text-gray-600 border border-gray-200">
                   {format(new Date(message.createdAt), 'MMMM dd, yyyy')}
                 </span>
               </div>
@@ -48,7 +48,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
           </React.Fragment>
         );
       })}
-      <div ref={messagesEndRef} />
+      <div ref={messagesEndRef} className="h-2" />
     </div>
   );
 };

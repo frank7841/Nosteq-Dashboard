@@ -6,6 +6,8 @@ import { MessageInput } from '../components/Messages/MessageInput';
 import { conversationsService, messagesService } from '../services/convsersations';
 import { socketService } from '../services/socket';
 import { authService } from '../services/auth';
+import { ArrowLeft } from 'lucide-react';
+import { markConversationAsRead, getTotalUnreadCount } from '../utils/readStatus';
 import type { Conversation, Message, User } from '../types';
 
 export const Dashboard: React.FC = () => {
@@ -16,6 +18,8 @@ export const Dashboard: React.FC = () => {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [viewFilter, setViewFilter] = useState<'all' | 'mine'>('all');
+  const [showConversationList, setShowConversationList] = useState(true);
+  const [conversationMessageCounts, setConversationMessageCounts] = useState<{ [conversationId: number]: number }>({});
 
   // Load conversations and users
   useEffect(() => {
@@ -53,7 +57,22 @@ export const Dashboard: React.FC = () => {
     const handleNewMessage = (message: Message) => {
       // If viewing this conversation, append without duplicates
       if (selectedConversation && message.conversationId === selectedConversation.id) {
-        setMessages((prev) => (prev.some((m) => m.id === message.id) ? prev : [...prev, message]));
+        setMessages((prev) => {
+          const newMessages = prev.some((m) => m.id === message.id) ? prev : [...prev, message];
+          // Update message count and mark as read since user is actively viewing
+          setConversationMessageCounts(prevCounts => ({
+            ...prevCounts,
+            [message.conversationId]: newMessages.length
+          }));
+          markConversationAsRead(message.conversationId, newMessages.length);
+          return newMessages;
+        });
+      } else {
+        // Update message count for conversations not currently being viewed
+        setConversationMessageCounts(prevCounts => ({
+          ...prevCounts,
+          [message.conversationId]: (prevCounts[message.conversationId] || 0) + 1
+        }));
       }
       // Refresh the conversations list (e.g., lastMessageAt)
       loadConversations();
@@ -110,24 +129,47 @@ export const Dashboard: React.FC = () => {
     try {
       const data = await messagesService.getByConversation(conversationId);
       setMessages(data);
+      
+      // Update message count for this conversation
+      setConversationMessageCounts(prev => ({
+        ...prev,
+        [conversationId]: data.length
+      }));
+      
+      return data;
     } catch (error) {
       console.error('Failed to load messages:', error);
+      return [];
     }
   };
 
   const handleSelectConversation = async (conversation: Conversation) => {
-    // Leave previous conversation
-    if (selectedConversation) {
-      socketService.leaveConversation(selectedConversation.id);
+    try {
+      // Leave previous conversation room
+      if (selectedConversation) {
+        socketService.leaveConversation(selectedConversation.id);
+      }
+
+      setSelectedConversation(conversation);
+      const messages = await loadMessages(conversation.id);
+      
+      // Mark conversation as read with current message count
+      markConversationAsRead(conversation.id, messages?.length || 0);
+      
+      // Join new conversation room
+      socketService.joinConversation(conversation.id);
+      
+      // Hide conversation list on mobile after selection
+      setShowConversationList(false);
+    } catch (error) {
+      console.error('Error selecting conversation:', error);
     }
+  };
 
-    setSelectedConversation(conversation);
-
-    // Join new conversation
-    socketService.joinConversation(conversation.id);
-
-    // Load messages
-    await loadMessages(conversation.id);
+  const handleBackToConversations = () => {
+    setShowConversationList(true);
+    // Optionally clear selection on mobile
+    // setSelectedConversation(null);
   };
 
   const handleSendMessage = async (content: string) => {
@@ -192,21 +234,35 @@ export const Dashboard: React.FC = () => {
 
   return (
     <Layout selectedConversation={selectedConversation}>
-      <div className="flex h-full">
-        {/* Conversations List */}
-        <div className="w-80 bg-white border-r border-gray-200 overflow-hidden flex flex-col">
-          <div className="p-4 border-b border-gray-200">
+      <div className="flex h-full relative">
+        {/* Mobile/Tablet Conversations List Overlay */}
+        <div className={`${
+          showConversationList ? 'block' : 'hidden'
+        } md:block absolute md:relative z-10 md:z-auto w-full md:w-80 lg:w-96 bg-white border-r border-gray-200 overflow-hidden flex flex-col h-full`}>
+          <div className="p-3 md:p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">Conversations</h2>
             </div>
             <div className="mt-2 flex items-center justify-between">
-              <p className="text-sm text-gray-500">
-                {conversations.length} {viewFilter === 'mine' ? 'assigned to me' : 'total'}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-xs md:text-sm text-gray-500">
+                  {conversations.length} {viewFilter === 'mine' ? 'assigned to me' : 'total'}
+                </p>
+                {(() => {
+                  const totalUnread = getTotalUnreadCount(
+                    conversations.map(c => ({ id: c.id, messageCount: conversationMessageCounts[c.id] || 0 }))
+                  );
+                  return totalUnread > 0 ? (
+                    <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                      {totalUnread} unread
+                    </span>
+                  ) : null;
+                })()}
+              </div>
               <div className="inline-flex rounded-md shadow-sm" role="group">
                 <button
                   onClick={() => setViewFilter('all')}
-                  className={`px-3 py-1 text-sm border ${
+                  className={`px-2 md:px-3 py-1 text-xs md:text-sm border ${
                     viewFilter === 'all' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 border-gray-300'
                   } rounded-l`}
                 >
@@ -214,7 +270,7 @@ export const Dashboard: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setViewFilter('mine')}
-                  className={`px-3 py-1 text-sm border ${
+                  className={`px-2 md:px-3 py-1 text-xs md:text-sm border ${
                     viewFilter === 'mine' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 border-gray-300'
                   } rounded-r`}
                 >
@@ -229,13 +285,34 @@ export const Dashboard: React.FC = () => {
               onSelectConversation={handleSelectConversation}
               users={users}
               onAssignConversation={handleAssignConversation}
+              conversationMessageCounts={conversationMessageCounts}
           />
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 flex flex-col">
+        <div className={`${
+          showConversationList ? 'hidden' : 'flex'
+        } md:flex flex-1 flex-col w-full`}>
           {selectedConversation ? (
             <>
+              {/* Mobile Header with Back Button */}
+              <div className="md:hidden flex items-center p-3 bg-white border-b border-gray-200">
+                <button
+                  onClick={handleBackToConversations}
+                  className="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors"
+                >
+                  <ArrowLeft size={20} className="text-gray-600" />
+                </button>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900">
+                    {selectedConversation.customer.name}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {selectedConversation.customer.phoneNumber}
+                  </p>
+                </div>
+              </div>
+              
               <MessageList messages={messages} />
               <MessageInput
                 onSendMessage={handleSendMessage}
@@ -248,12 +325,12 @@ export const Dashboard: React.FC = () => {
             </>
           ) : (
             <div className="flex items-center justify-center h-full bg-gray-50">
-              <div className="text-center">
-                <div className="text-6xl mb-4">💬</div>
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              <div className="text-center px-4">
+                <div className="text-4xl md:text-6xl mb-4">💬</div>
+                <h3 className="text-lg md:text-xl font-semibold text-gray-700 mb-2">
                   Select a conversation
                 </h3>
-                <p className="text-gray-500">
+                <p className="text-sm md:text-base text-gray-500">
                   Choose a conversation from the list to start messaging
                 </p>
               </div>

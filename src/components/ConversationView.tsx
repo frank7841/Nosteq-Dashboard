@@ -3,7 +3,6 @@ import { Paperclip, Image, Send, X } from 'lucide-react';
 import MediaUpload from './MediaUpload';
 import MediaDropZone from './MediaDropZone';
 import type { Message, Conversation } from '../types';
-import { formatDistanceToNow } from 'date-fns';
 import { conversationsService, messagesService } from '../services/convsersations';
 
 interface ConversationViewProps {
@@ -75,7 +74,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, onC
     }
   };
 
-  const handleMediaSent = (response: any) => {
+  const handleMediaSent = () => {
     // Refresh messages to show the sent media
     messagesService.getByConversation(conversationId)
       .then(updatedMessages => setMessages(updatedMessages))

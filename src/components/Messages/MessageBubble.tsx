@@ -22,7 +22,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
               src={message.mediaUrl} 
               alt={message.content || 'Image'}
               className="max-w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-              style={{ maxHeight: '300px', maxWidth: '250px' }}
+              style={{ 
+                maxHeight: window.innerWidth < 768 ? '200px' : '300px', 
+                maxWidth: window.innerWidth < 768 ? '200px' : '250px' 
+              }}
               onClick={() => window.open(message.mediaUrl, '_blank')}
               onError={(e) => {
                 console.error('Failed to load image:', message.mediaUrl);
@@ -68,7 +71,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
             <video 
               controls 
               className="max-w-full h-auto rounded-lg"
-              style={{ maxHeight: '300px', maxWidth: '250px' }}
+              style={{ 
+                maxHeight: window.innerWidth < 768 ? '200px' : '300px', 
+                maxWidth: window.innerWidth < 768 ? '200px' : '250px' 
+              }}
             >
               <source src={message.mediaUrl} type="video/mp4" />
               Your browser does not support the video tag.
@@ -112,9 +118,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   };
 
   return (
-    <div className={`flex ${isOutbound ? 'justify-end' : 'justify-start'} mb-4`}>
+    <div className={`flex ${isOutbound ? 'justify-end' : 'justify-start'} mb-3 md:mb-4 px-2 md:px-0`}>
       <div
-        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+        className={`max-w-[280px] sm:max-w-xs lg:max-w-md px-3 md:px-4 py-2 rounded-lg ${
           isOutbound
             ? 'bg-green-500 text-white'
             : 'bg-white border border-gray-200 text-gray-900'
@@ -125,16 +131,16 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
         
         {/* Render text content if present */}
         {message.content && message.content.trim() !== '' && (
-          <p className="text-sm break-words">{message.content}</p>
+          <p className="text-sm md:text-base break-words leading-relaxed">{message.content}</p>
         )}
         
         {/* Timestamp and status */}
         <div className={`flex items-center justify-end mt-1 text-xs ${
           isOutbound ? 'text-green-100' : 'text-gray-500'
         }`}>
-          <span>{format(new Date(message.createdAt), 'HH:mm')}</span>
+          <span className="text-xs">{format(new Date(message.createdAt), 'HH:mm')}</span>
           {isOutbound && (
-            <span className="ml-1">
+            <span className="ml-1 flex-shrink-0">
               {message.status === 'read' ? (
                 <CheckCheck className="w-3 h-3 text-blue-300" />
               ) : message.status === 'delivered' ? (

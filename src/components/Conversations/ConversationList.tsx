@@ -8,6 +8,7 @@ interface ConversationListProps {
   onSelectConversation: (conversation: Conversation) => void;
   users: User[];
   onAssignConversation: (conversationId: number, assigneeId: number) => void;
+  conversationMessageCounts?: { [conversationId: number]: number };
 }
 
 export const ConversationList: React.FC<ConversationListProps> = ({
@@ -16,6 +17,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   onSelectConversation,
   users,
   onAssignConversation,
+  conversationMessageCounts = {},
 }) => {
   if (conversations.length === 0) {
     return (
@@ -35,6 +37,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
         onClick={() => onSelectConversation(conversation)}
         users={users}
         onAssign={(userId) => onAssignConversation(conversation.id, userId)}
+        messageCount={conversationMessageCounts[conversation.id] || 0}
         />
       ))}
     </div>

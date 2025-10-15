@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Sidebar } from '../components/Layout/Sidebar';
+import { Layout } from '../components/Layout/Layout';
 import { customersService, type CreateCustomerDto } from '../services/customers';
 import { useAuth } from '../context/AuthContext';
 
@@ -118,22 +118,17 @@ export const CustomersPage: React.FC = () => {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <Sidebar />
-      <main className="flex-1 p-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold">Customers</h1>
-          </div>
-
+    <Layout>
+      <div className="flex-1 overflow-y-auto p-3 md:p-6 bg-gray-100" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Customers</h1>
           {!isAdmin && (
             <div className="mb-6 p-4 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded">
               You do not have permission to create customers.
             </div>
           )}
-
-          <section className="bg-white rounded-lg shadow p-6 mb-8">
-            <h2 className="text-lg font-semibold mb-4">Create Customer</h2>
+          <section className="bg-white rounded-lg shadow p-4 md:p-6 mb-4 md:mb-6">
+            <h2 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Create New Customer</h2>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Name</label>
@@ -142,9 +137,9 @@ export const CustomersPage: React.FC = () => {
                   value={form.name}
                   onChange={handleChange}
                   required
-                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="Frank"
-                  disabled={!isAdmin}
+                  className="w-full border rounded px-2 md:px-3 py-1.5 md:py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm md:text-base"
+                  placeholder="Name"
+                  disabled={!isAdmin || creating}
                 />
               </div>
               <div>
@@ -154,9 +149,9 @@ export const CustomersPage: React.FC = () => {
                   value={form.phoneNumber}
                   onChange={handleChange}
                   required
-                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="+254743131549"
-                  disabled={!isAdmin}
+                  className="w-full border rounded px-2 md:px-3 py-1.5 md:py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm md:text-base"
+                  placeholder="Phone Number"
+                  disabled={!isAdmin || creating}
                 />
               </div>
               <div>
@@ -166,35 +161,44 @@ export const CustomersPage: React.FC = () => {
                   name="email"
                   value={form.email || ''}
                   onChange={handleChange}
-                  className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="frank@gmail.com"
-                  disabled={!isAdmin}
+                  className="w-full border rounded px-2 md:px-3 py-1.5 md:py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm md:text-base"
+                  placeholder="Email (optional)"
+                  disabled={!isAdmin || creating}
                 />
               </div>
               <div className="md:col-span-3 flex items-center gap-3">
                 <button
                   type="submit"
                   disabled={!isAdmin || creating}
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                  className="bg-green-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded hover:bg-green-700 disabled:opacity-50 text-sm md:text-base"
                 >
                   {creating ? 'Creating...' : 'Create Customer'}
                 </button>
-                {error && <span className="text-sm text-red-600">{error}</span>}
-                {success && <span className="text-sm text-green-700">{success}</span>}
+                {(error || success) && (
+                  <div className="mt-3 md:mt-4">
+                    {error && <p className="text-xs md:text-sm text-red-600">{error}</p>}
+                    {success && <p className="text-xs md:text-sm text-green-700">{success}</p>}
+                  </div>
+                )}
               </div>
             </form>
           </section>
-
-          <section className="bg-white rounded-lg shadow">
-            <div className="p-4 border-b"><h2 className="text-lg font-semibold">All Customers</h2></div>
+          {/* Customers List Section */}
+          <section className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="p-4 md:p-6 border-b border-gray-200">
+              <h2 className="text-base md:text-lg font-semibold">All Customers ({customers.length})</h2>
+            </div>
             {loading ? (
-              <div className="p-6">Loading...</div>
+              <div className="p-4 md:p-6 text-center">
+                <p className="text-sm md:text-base text-gray-600">Loading customers...</p>
+              </div>
+            ) : customers.length === 0 ? (
+              <div className="p-4 md:p-6 text-center">
+                <p className="text-sm md:text-base text-gray-600">No customers found.</p>
+              </div>
             ) : (
-              <div className="divide-y">
-                {customers.length === 0 ? (
-                  <div className="p-6 text-gray-500">No customers yet.</div>
-                ) : (
-                  customers.map((c) => (
+              <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                {customers.map((c) => (
                     <div key={c.id} className="p-4 flex items-center justify-between gap-4">
                       {editingId === c.id ? (
                         <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -202,7 +206,7 @@ export const CustomersPage: React.FC = () => {
                             name="name"
                             value={editForm.name}
                             onChange={handleEditChange}
-                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            className="w-full border rounded px-2 md:px-3 py-1.5 md:py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm md:text-base"
                             placeholder="Name"
                             disabled={!isAdmin || saving}
                           />
@@ -210,7 +214,7 @@ export const CustomersPage: React.FC = () => {
                             name="phoneNumber"
                             value={editForm.phoneNumber}
                             onChange={handleEditChange}
-                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                            className="w-full border rounded px-2 md:px-3 py-1.5 md:py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm md:text-base"
                             placeholder="Phone Number"
                             disabled={!isAdmin || saving}
                           />
@@ -219,8 +223,8 @@ export const CustomersPage: React.FC = () => {
                             name="email"
                             value={editForm.email || ''}
                             onChange={handleEditChange}
-                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                            placeholder="Email"
+                            className="w-full border rounded px-2 md:px-3 py-1.5 md:py-2 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm md:text-base"
+                            placeholder="Email (optional)"
                             disabled={!isAdmin || saving}
                           />
                         </div>
@@ -230,7 +234,6 @@ export const CustomersPage: React.FC = () => {
                           <p className="text-sm text-gray-600">{c.phoneNumber}{c.email ? ` · ${c.email}` : ''}</p>
                         </div>
                       )}
-
                       <div className="flex items-center gap-2">
                         {isAdmin && (
                           editingId === c.id ? (
@@ -271,12 +274,12 @@ export const CustomersPage: React.FC = () => {
                       </div>
                     </div>
                   ))
-                )}
+                }
               </div>
             )}
           </section>
         </div>
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 };

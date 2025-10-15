@@ -64,12 +64,12 @@ export const MessageInput: React.FC<MessageInputProps> = ({
 
   return (
     <>
-    <form onSubmit={handleSubmit} className="border-t border-gray-200 bg-white p-4">
-      <div className="flex items-end space-x-2">
+    <form onSubmit={handleSubmit} className="border-t border-gray-200 bg-white p-3 md:p-4">
+      <div className="flex items-end space-x-2 md:space-x-3">
         <button
           type="button"
           onClick={handleAttachmentClick}
-          className={`p-2 transition-colors rounded-lg ${
+          className={`p-2 md:p-2.5 transition-colors rounded-lg touch-manipulation ${
             showMediaUpload 
               ? 'text-blue-600 bg-blue-50 hover:bg-blue-100' 
               : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
@@ -77,30 +77,30 @@ export const MessageInput: React.FC<MessageInputProps> = ({
           disabled={disabled}
           title="Attach media"
         >
-          <Paperclip className="w-5 h-5" />
+          <Paperclip className="w-5 h-5 md:w-5 md:h-5" />
         </button>
         <button
           type="button"
-          className="p-2 text-gray-500 hover:text-gray-700 transition"
+          className="p-2 md:p-2.5 text-gray-500 hover:text-gray-700 transition rounded-lg touch-manipulation"
           disabled={disabled}
         >
-          <Smile className="w-5 h-5" />
+          <Smile className="w-5 h-5 md:w-5 md:h-5" />
         </button>
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="Type a message..."
-          className="flex-1 resize-none border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 max-h-32"
+          className="flex-1 resize-none border border-gray-300 rounded-lg px-3 md:px-4 py-2 md:py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500 max-h-32 text-sm md:text-base"
           rows={1}
           disabled={disabled}
         />
         <button
           type="submit"
           disabled={!message.trim() || disabled}
-          className="bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-green-600 text-white p-2.5 md:p-3 rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
         >
-          <Send className="w-5 h-5" />
+          <Send className="w-4 h-4 md:w-5 md:h-5" />
         </button>
       </div>
     </form>
@@ -108,17 +108,17 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     {/* Media Upload Interface */}
     {showMediaUpload && conversationId && customerId && phoneNumber && (
       <div className="border-t border-gray-200 bg-white">
-        <div className="flex justify-between items-center px-4 py-3 bg-gray-50 border-b border-gray-200">
-          <h4 className="text-sm font-semibold text-gray-800">Upload Media</h4>
+        <div className="flex justify-between items-center px-3 md:px-4 py-3 bg-gray-50 border-b border-gray-200">
+          <h4 className="text-sm md:text-base font-semibold text-gray-800">Upload Media</h4>
           <button 
             onClick={() => setShowMediaUpload(false)}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
+            className="text-gray-500 hover:text-gray-700 transition-colors p-1 rounded touch-manipulation"
             type="button"
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
-        <div className="p-4">
+        <div className="p-3 md:p-4">
           <MediaUpload
             conversationId={conversationId}
             customerId={customerId}
@@ -133,17 +133,17 @@ export const MessageInput: React.FC<MessageInputProps> = ({
     {/* Drag & Drop Zone */}
     {showDropZone && conversationId && customerId && phoneNumber && (
       <div className="border-t border-gray-200 bg-white">
-        <div className="flex justify-between items-center px-4 py-3 bg-gray-50 border-b border-gray-200">
-          <h4 className="text-sm font-semibold text-gray-800">Drag & Drop Upload</h4>
+        <div className="flex justify-between items-center px-3 md:px-4 py-3 bg-gray-50 border-b border-gray-200">
+          <h4 className="text-sm md:text-base font-semibold text-gray-800">Drag & Drop Upload</h4>
           <button 
             onClick={() => setShowDropZone(false)}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
+            className="text-gray-500 hover:text-gray-700 transition-colors p-1 rounded touch-manipulation"
             type="button"
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
-        <div className="p-4">
+        <div className="p-3 md:p-4">
           <MediaDropZone
             conversationId={conversationId}
             customerId={customerId}
