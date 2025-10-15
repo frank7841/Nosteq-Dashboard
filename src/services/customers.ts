@@ -4,13 +4,11 @@ import type { Customer } from '../types';
 export interface CreateCustomerDto {
   name: string;
   phoneNumber: string;
-  email?: string;
 }
 
 export interface UpdateCustomerDto {
   name?: string;
   phoneNumber?: string;
-  email?: string;
 }
 
 export const customersService = {

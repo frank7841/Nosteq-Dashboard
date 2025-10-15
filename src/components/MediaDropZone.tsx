@@ -77,12 +77,6 @@ const MediaDropZone: React.FC<MediaDropZoneProps> = ({
     }
   };
 
-  const handleCaptionChange = (fileIndex: number, caption: string) => {
-    setCaptions(prev => ({
-      ...prev,
-      [fileIndex]: caption,
-    }));
-  };
 
   const handleSendFile = async (file: File, fileIndex: number) => {
     const mediaType = getMediaTypeFromFile(file);
@@ -129,10 +123,10 @@ const MediaDropZone: React.FC<MediaDropZoneProps> = ({
   };
 
   return (
-    <div className={`w-full max-w-2xl mx-auto h-auto ${className}`}>
+    <div className={`w-full max-w-2xl mx-auto max-h-[70vh] overflow-y-auto ${className}`} style={{ WebkitOverflowScrolling: 'touch' }}>
       {/* Drop Area */}
       <div
-        className={`relative min-h-[200px] border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 flex items-center justify-center ${
+        className={`relative min-h-[120px] md:min-h-[200px] border-2 border-dashed rounded-xl p-4 md:p-10 text-center cursor-pointer transition-all duration-300 flex items-center justify-center ${
           isDragOver
             ? 'border-blue-500 bg-blue-50 scale-[1.02]'
             : isUploading
@@ -167,18 +161,16 @@ const MediaDropZone: React.FC<MediaDropZoneProps> = ({
             )}
           </div>
         ) : (
-          <div className="w-full">
-            <div className="text-5xl mb-4">📁</div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">Drop files here or click to browse</h3>
-            <p className="text-gray-600 text-sm mb-3">
-              Drag and drop your media files here, or{' '}
-              <button type="button" className="text-blue-500 hover:underline font-medium">
-                browse files
-              </button>
-            </p>
-            <p className="text-xs text-gray-500">
-              Supported: Images, Audio, Video, Documents (PDF, DOC, TXT, etc.)
-            </p>
+          <div className="space-y-2 md:space-y-4">
+            <div className="text-3xl md:text-6xl">📁</div>
+            <div>
+              <p className="text-sm md:text-lg font-semibold text-gray-700 mb-1 md:mb-2">
+                {isDragOver ? 'Drop files here!' : 'Drag & drop files here'}
+              </p>
+              <p className="text-xs md:text-sm text-gray-500">
+                or click to browse files
+              </p>
+            </div>
           </div>
         )}
       </div>
@@ -204,12 +196,10 @@ const MediaDropZone: React.FC<MediaDropZoneProps> = ({
           <div className="space-y-3">
             {selectedFiles.map((file, index) => (
               <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <span className="block font-medium text-gray-800 mb-1">{file.name}</span>
-                    <div className="text-xs text-gray-600">
-                      {formatFileSize(file.size)} • {getMediaTypeFromFile(file)}
-                    </div>
+                <div className="flex items-center justify-between p-2 md:p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs md:text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                    <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
                   </div>
                   <button
                     onClick={() => removeFile(index)}
@@ -220,21 +210,24 @@ const MediaDropZone: React.FC<MediaDropZoneProps> = ({
                   </button>
                 </div>
                 
-                <div className="flex gap-2 items-center">
+                <div className="flex items-center gap-1 md:gap-2 ml-2 md:ml-4">
                   <input
                     type="text"
-                    placeholder="Add caption (optional)..."
+                    placeholder="Add caption..."
                     value={captions[index] || ''}
-                    onChange={(e) => handleCaptionChange(index, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm disabled:bg-gray-100"
+                    onChange={(e) => setCaptions(prev => ({ ...prev, [index]: e.target.value }))}
+                    className="px-2 md:px-3 py-1 text-xs md:text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-20 md:w-auto"
                     disabled={isUploading}
                   />
                   <button
-                    onClick={() => handleSendFile(file, index)}
+                    onClick={() => removeFile(index)}
                     disabled={isUploading}
-                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                    className="p-1 md:p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+                    title="Remove file"
                   >
-                    Send
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 md:h-5 md:w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                    </svg>
                   </button>
                 </div>
               </div>
@@ -242,11 +235,11 @@ const MediaDropZone: React.FC<MediaDropZoneProps> = ({
           </div>
           
           {/* Bulk Actions */}
-          <div className="mt-4 pt-4 border-t border-gray-200 text-center">
+          <div className="mt-3 md:mt-6 flex justify-center">
             <button
               onClick={handleSendAll}
-              disabled={isUploading || selectedFiles.length === 0}
-              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold shadow-md hover:shadow-lg"
+              disabled={selectedFiles.length === 0 || isUploading}
+              className="px-4 md:px-8 py-2 md:py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200 shadow-md hover:shadow-lg text-sm md:text-base touch-manipulation"
             >
               {isUploading ? (
                 <div className="flex items-center justify-center gap-2">
