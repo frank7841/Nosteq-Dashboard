@@ -184,23 +184,23 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
         </div>
         </div>
         
-        {/* Copy Button - visible on hover */}
+        {/* Copy Button - appears on hover with high visibility */}
         {message.content && message.content.trim() !== '' && (
           <button
             onClick={handleCopyMessage}
-            className={`absolute top-2 right-2 p-1.5 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100 ${
+            className={`absolute top-2 right-2 p-2 rounded-full transition-all duration-200 shadow-lg border ${
               copied
-                ? 'bg-green-100 text-green-600'
+                ? 'opacity-100 bg-green-500 text-white border-green-600 shadow-green-200'
                 : isOutbound
-                ? 'bg-green-400 hover:bg-green-300 text-white'
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                ? 'opacity-0 group-hover:opacity-100 bg-white text-green-600 border-green-200 hover:bg-green-50 hover:border-green-300 shadow-md'
+                : 'opacity-0 group-hover:opacity-100 bg-gray-800 text-white border-gray-700 hover:bg-gray-700 hover:border-gray-600 shadow-md'
             }`}
             title={copied ? 'Copied!' : 'Copy message'}
           >
             {copied ? (
-              <Check className="w-3 h-3" />
+              <Check className="w-4 h-4" />
             ) : (
-              <Copy className="w-3 h-3" />
+              <Copy className="w-4 h-4" />
             )}
           </button>
         )}
