@@ -1,5 +1,6 @@
 import React from 'react';
 import { Search, Bell, Menu } from 'lucide-react';
+import { ThemeToggle } from '../ThemeToggle';
 
 interface HeaderProps {
   selectedConversation?: any;
@@ -9,43 +10,48 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ selectedConversation, onMenuClick, showMenuButton }) => {
   return (
-    <div className="bg-white border-b border-gray-200 px-3 md:px-6 py-3 md:py-4">
+    <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-3 md:px-6 py-3 md:py-4 transition-theme">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           {/* Mobile Menu Button */}
           {showMenuButton && onMenuClick && (
             <button 
               onClick={onMenuClick}
-              className="lg:hidden p-2 mr-2 hover:bg-gray-100 rounded-full touch-manipulation"
+              className="lg:hidden p-2 mr-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full touch-manipulation transition-theme"
             >
-              <Menu className="w-5 h-5 text-gray-600" />
+              <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             </button>
           )}
           
           <div>
             {selectedConversation ? (
               <div>
-                <h2 className="text-lg md:text-xl font-semibold truncate max-w-[200px] md:max-w-none">
+                <h2 className="text-lg md:text-xl font-semibold truncate max-w-[200px] md:max-w-none text-gray-900 dark:text-gray-100">
                   {selectedConversation.customer.name}
                 </h2>
-                <p className="text-xs md:text-sm text-gray-500 truncate max-w-[200px] md:max-w-none">
+                <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 truncate max-w-[200px] md:max-w-none">
                   {selectedConversation.customer.phoneNumber}
                 </p>
               </div>
             ) : (
-              <h2 className="text-lg md:text-xl font-semibold">Conversations</h2>
+              <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100">Conversations</h2>
             )}
           </div>
         </div>
 
         <div className="flex items-center space-x-2 md:space-x-4">
-          <button className="p-2 hover:bg-gray-100 rounded-full touch-manipulation">
-            <Search className="w-4 md:w-5 h-4 md:h-5 text-gray-600" />
+          <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full touch-manipulation transition-theme">
+            <Search className="w-4 md:w-5 h-4 md:h-5 text-gray-600 dark:text-gray-400" />
           </button>
-          <button className="p-2 hover:bg-gray-100 rounded-full relative touch-manipulation">
-            <Bell className="w-4 md:w-5 h-4 md:h-5 text-gray-600" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+          <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full relative touch-manipulation transition-theme">
+            <Bell className="w-4 md:w-5 h-4 md:h-5 text-gray-600 dark:text-gray-400" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 dark:bg-red-400 rounded-full"></span>
           </button>
+          
+          {/* Theme Toggle */}
+          <div className="ml-2">
+            <ThemeToggle size="md" variant="switch" />
+          </div>
         </div>
       </div>
     </div>

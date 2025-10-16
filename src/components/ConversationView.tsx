@@ -17,7 +17,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, onC
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [markingAsRead, setMarkingAsRead] = useState(false);
+
   const [showMediaUpload, setShowMediaUpload] = useState(false);
   const [showDropZone, setShowDropZone] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -129,32 +129,6 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, onC
     setError(errorMsg);
     setTimeout(() => setError(null), 5000);
   };
-  const handleMarkConversationAsRead = async () => {
-    if (!conversation || markingAsRead) return;
-
-    setMarkingAsRead(true);
-    try {
-      const updatedMessages = await messagesService.markConversationAsRead(conversation.id);
-      setMessages(updatedMessages);
-      
-      // Update conversation status to 'closed' since all messages are now read
-      try {
-        const updatedConversation = await conversationsService.updateStatusBasedOnUnreadMessages(conversation.id);
-        setConversation(updatedConversation);
-      } catch (statusErr) {
-        console.error('Error updating conversation status:', statusErr);
-        // Don't fail the whole operation if status update fails
-      }
-      
-      setError(null); // Clear any previous errors
-    } catch (err) {
-      setError('Failed to mark conversation as read');
-      console.error('Error marking conversation as read:', err);
-    } finally {
-      setMarkingAsRead(false);
-    }
-  };
-
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -165,19 +139,30 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, onC
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-96 gap-4">
-        <div className="w-8 h-8 border-3 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
-        <p>Loading conversation...</p>
+      <div className="flex flex-col items-center justify-center h-96 gap-4 surface-primary transition-theme">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-whatsapp-green-500 dark:border-whatsapp-green-400"></div>
+        <p className="text-theme-secondary">Loading conversation...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 gap-4 surface-primary transition-theme">
+        <div className="text-red-500 text-center">
+          <p className="font-semibold text-theme-primary">Error loading conversation</p>
+          <p className="text-sm text-theme-secondary mt-2">{error}</p>
+        </div>
       </div>
     );
   }
 
   if (!conversation) {
     return (
-      <div className="flex flex-col items-center justify-center h-96 gap-4">
-        <p>Conversation not found</p>
+      <div className="flex flex-col items-center justify-center h-96 gap-4 surface-primary transition-theme">
+        <p className="text-theme-secondary">Conversation not found</p>
         {onClose && (
-          <button onClick={onClose} className="bg-none border-none text-2xl cursor-pointer text-gray-600 p-0 w-8 h-8 flex items-center justify-center">
+          <button onClick={onClose} className="bg-none border-none text-2xl cursor-pointer text-theme-secondary p-0 w-8 h-8 flex items-center justify-center hover:text-theme-primary transition-theme">
             Close
           </button>
         )}
@@ -186,38 +171,12 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, onC
   }
 
   return (
-    <div className="flex flex-col h-screen max-h-[800px] border border-gray-200 rounded-lg bg-white overflow-hidden">
+    <div className="flex flex-col h-screen surface-primary transition-theme">
       {/* Header */}
-      <div className="flex justify-between items-center px-5 py-4 bg-gray-50 border-b border-gray-200">
-        <div className="customer-info">
-          <h3 className="m-0 mb-1 text-gray-800">{conversation.customer?.name || 'Unknown Customer'}</h3>
-          <p className="m-0 text-gray-600 text-sm">{conversation.customer?.phoneNumber}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleMarkConversationAsRead}
-            disabled={markingAsRead}
-            className="px-3 py-1.5 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
-            title="Mark all messages in this conversation as read"
-          >
-            {markingAsRead ? (
-              <>
-                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Marking...
-              </>
-            ) : (
-              'Mark All Read'
-            )}
-          </button>
-          <span className={`px-2 py-1 rounded-xl text-xs font-medium uppercase ${
-            conversation.status === 'open' 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-red-100 text-red-800'
-          }`}>
-            {conversation.status}
-          </span>
+      <div className="surface-secondary border-b border-theme px-5 py-4 flex justify-between items-center transition-theme">
+        <div className="flex items-center">
           {onClose && (
-            <button onClick={onClose} className="bg-transparent border-none text-2xl cursor-pointer text-gray-600 p-0 w-8 h-8 flex items-center justify-center">
+            <button onClick={onClose} className="bg-transparent border-none text-2xl cursor-pointer text-theme-secondary hover:text-theme-primary p-0 w-8 h-8 flex items-center justify-center transition-theme">
               ×
             </button>
           )}
@@ -226,10 +185,10 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, onC
 
       {/* Error Display */}
       {error && (
-        <div className="flex items-center gap-2 px-5 py-3 bg-red-50 border-b border-red-500 text-red-800">
+        <div className="flex items-center gap-2 px-5 py-3 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 transition-theme">
           <span className="error-icon">⚠️</span>
           {error}
-          <button onClick={() => setError(null)} className="ml-auto bg-transparent border-none text-lg cursor-pointer text-red-800">
+          <button onClick={() => setError(null)} className="ml-auto bg-transparent border-none text-lg cursor-pointer text-red-800 dark:text-red-300 hover:text-red-600 dark:hover:text-red-200 transition-theme">
             ×
           </button>
         </div>

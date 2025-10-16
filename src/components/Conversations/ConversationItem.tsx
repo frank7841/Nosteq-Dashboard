@@ -54,33 +54,37 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition ${
-        isSelected ? 'bg-green-50 border-l-4 border-l-green-600' : isUnread ? 'bg-blue-50' : ''
+      className={`p-4 border-b border-theme cursor-pointer hover:bg-theme-tertiary transition-theme ${
+        isSelected 
+          ? 'bg-whatsapp-green-50 dark:bg-whatsapp-green-900/20 border-l-4 border-l-whatsapp-green-600 dark:border-l-whatsapp-green-400' 
+          : isUnread 
+          ? 'bg-blue-50 dark:bg-blue-900/20' 
+          : 'surface-secondary'
       }`}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <div className="flex items-center">
-            <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold mr-3">
+            <div className="w-12 h-12 bg-whatsapp-green-600 dark:bg-whatsapp-green-500 rounded-full flex items-center justify-center text-white font-semibold mr-3 transition-theme">
               {conversation.customer.name.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className={`font-semibold truncate ${
-                  isUnread ? 'text-gray-900' : 'text-gray-700'
+                <h3 className={`font-semibold truncate transition-theme ${
+                  isUnread ? 'text-theme-primary' : 'text-theme-secondary'
                 }`}>
                   {conversation.customer.name}
                 </h3>
                 <UnreadMessageBadge count={unreadCount} size="small" />
               </div>
-              <p className="text-sm text-gray-500 truncate">
+              <p className="text-sm text-theme-muted truncate transition-theme">
                 {conversation.customer.phoneNumber}
               </p>
             </div>
           </div>
         </div>
         <div className="ml-2 flex flex-col items-end gap-1">
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-theme-muted transition-theme">
             {formatDistanceToNow(new Date(conversation.lastMessageAt), { addSuffix: true })}
           </span>
           
@@ -89,7 +93,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
             <button
               onClick={handleMarkAsRead}
               disabled={isMarkingAsRead}
-              className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-1 px-2 py-1 text-xs bg-whatsapp-green-500 dark:bg-whatsapp-green-600 text-white rounded hover:bg-whatsapp-green-600 dark:hover:bg-whatsapp-green-500 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-theme"
               title="Mark conversation as read"
             >
               {isMarkingAsRead ? (
@@ -102,12 +106,12 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
           )}
           
           <span
-            className={`px-2 py-1 text-xs rounded-full ${
+            className={`px-2 py-1 text-xs rounded-full transition-theme ${
               conversation.status === 'open'
-                ? 'bg-green-100 text-green-800'
+                ? 'bg-whatsapp-green-100 dark:bg-whatsapp-green-900/30 text-whatsapp-green-800 dark:text-whatsapp-green-300'
                 : conversation.status === 'pending'
-                ? 'bg-yellow-100 text-yellow-800'
-                : 'bg-gray-100 text-gray-800'
+                ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
+                : 'surface-elevated text-theme-secondary'
             }`}
           >
             {conversation.status}

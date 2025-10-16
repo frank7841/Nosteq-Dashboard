@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Message } from '../../types';
-import { format } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { Check, CheckCheck, FileText, Download, Image as ImageIcon, Copy } from 'lucide-react';
 
 interface MessageBubbleProps {
@@ -76,15 +76,15 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
               rel="noopener noreferrer"
               className={`flex items-center p-3 rounded-lg border transition-colors ${
                 isOutbound 
-                  ? 'bg-green-400 border-green-300 hover:bg-green-300 text-white' 
-                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-800'
+                  ? 'bg-green-500 border-green-400 hover:bg-green-400 text-white' 
+                  : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200'
               }`}
             >
               <FileText className="w-8 h-8 mr-3 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{fileName}</p>
                 <p className={`text-xs ${
-                  isOutbound ? 'text-green-100' : 'text-gray-500'
+                  isOutbound ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'
                 }`}>
                   {fileExtension} • Click to open
                 </p>
@@ -134,8 +134,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
               rel="noopener noreferrer"
               className={`flex items-center p-2 rounded border transition-colors ${
                 isOutbound 
-                  ? 'bg-green-400 border-green-300 hover:bg-green-300 text-white' 
-                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-800'
+                  ? 'bg-green-500 border-green-400 hover:bg-green-400 text-white' 
+                  : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200'
               }`}
             >
               <ImageIcon className="w-5 h-5 mr-2" />
@@ -150,36 +150,35 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     <div className={`flex ${isOutbound ? 'justify-end' : 'justify-start'} mb-3 md:mb-4 px-2 md:px-0 group`}>
       <div className="relative">
         <div
-          className={`max-w-[280px] sm:max-w-xs lg:max-w-md px-3 md:px-4 py-2 rounded-lg ${
-            isOutbound
-              ? 'bg-green-500 text-white'
-              : 'bg-white border border-gray-200 text-gray-900'
+          className={`group relative max-w-xs lg:max-w-md px-4 py-2 rounded-lg shadow-sm transition-colors ${
+            message.direction === 'outbound'
+              ? 'bg-green-500 dark:bg-green-600 text-white ml-auto shadow-md'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 shadow'
           }`}
         >
-        {/* Render media content first if present */}
-        {renderMediaContent()}
-        
-        {/* Render text content if present */}
-        {message.content && message.content.trim() !== '' && (
-          <p className="text-sm md:text-base break-words leading-relaxed">{message.content}</p>
-        )}
+          {/* Render media content first if present */}
+          {renderMediaContent()}
+          
+          {/* Render text content if present */}
+          {message.content && message.content.trim() !== '' && (
+            <p className="text-sm md:text-base break-words leading-relaxed">{message.content}</p>
+          )}
         
         {/* Timestamp and status */}
         <div className={`flex items-center justify-end mt-1 text-xs ${
-          isOutbound ? 'text-green-100' : 'text-gray-500'
+          message.direction === 'outbound' 
+            ? 'text-green-100 dark:text-green-200' 
+            : 'text-gray-500 dark:text-gray-400'
         }`}>
-          <span className="text-xs">{format(new Date(message.createdAt), 'HH:mm')}</span>
-          {copied && <span className="ml-2 text-green-400">Copied!</span>}
-          {isOutbound && (
-            <span className="ml-1 flex-shrink-0">
-              {message.status === 'read' ? (
-                <CheckCheck className="w-3 h-3 text-blue-300" />
-              ) : message.status === 'delivered' ? (
-                <CheckCheck className="w-3 h-3" />
-              ) : (
-                <Check className="w-3 h-3" />
-              )}
-            </span>
+          <span className="mr-1">
+            {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
+          </span>
+          {message.direction === 'outbound' && (
+            <div className="flex items-center">
+              {message.status === 'sent' && <Check size={12} className="text-green-200" />}
+              {message.status === 'delivered' && <CheckCheck size={12} className="text-green-200" />}
+              {message.status === 'read' && <CheckCheck size={12} className="text-blue-300" />}
+            </div>
           )}
         </div>
         </div>
@@ -193,7 +192,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
                 ? 'opacity-100 bg-green-500 text-white border-green-600 shadow-green-200'
                 : isOutbound
                 ? 'opacity-0 group-hover:opacity-100 bg-white text-green-600 border-green-200 hover:bg-green-50 hover:border-green-300 shadow-md'
-                : 'opacity-0 group-hover:opacity-100 bg-gray-800 text-white border-gray-700 hover:bg-gray-700 hover:border-gray-600 shadow-md'
+                : 'opacity-0 group-hover:opacity-100 bg-gray-800 dark:bg-gray-700 text-white border-gray-700 dark:border-gray-600 hover:bg-gray-700 dark:hover:bg-gray-600 hover:border-gray-600 dark:hover:border-gray-500 shadow-md'
             }`}
             title={copied ? 'Copied!' : 'Copy message'}
           >

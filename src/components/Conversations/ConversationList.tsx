@@ -23,14 +23,14 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 }) => {
   if (conversations.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
-        <p>No conversations yet</p>
+      <div className="flex items-center justify-center h-full surface-secondary transition-theme">
+        <p className="text-theme-muted">No conversations yet</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-y-auto h-full">
+    <div className="overflow-y-auto h-full surface-secondary transition-theme">
       {conversations.map((conversation) => (
         <ConversationItem
         key={conversation.id}
