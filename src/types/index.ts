@@ -35,7 +35,10 @@ export interface User {
     direction: 'inbound' | 'outbound';
     content: string;
     mediaUrl?: string;
+    whatsappMessageId?: string;
     status: 'sent' | 'delivered' | 'read' | 'failed';
+    readAt?: string | null;
+    metadata?: any;
     createdAt: string;
     user?: User;
     customer: Customer;

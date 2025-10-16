@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Paperclip, Image, Send, X } from 'lucide-react';
 import MediaUpload from './MediaUpload';
 import MediaDropZone from './MediaDropZone';
+import { MessageList } from './Messages/MessageList';
 import type { Message, Conversation } from '../types';
 import { conversationsService, messagesService } from '../services/convsersations';
 
@@ -16,9 +17,11 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, onC
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [markingAsRead, setMarkingAsRead] = useState(false);
   const [showMediaUpload, setShowMediaUpload] = useState(false);
   const [showDropZone, setShowDropZone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,6 +42,44 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, onC
       
       setConversation(conversationData);
       setMessages(messagesData);
+
+      // Automatically mark unread inbound messages as read
+      const unreadInboundMessages = messagesData.filter(
+        message => message.direction === 'inbound' && 
+        (message.status !== 'read' || message.readAt === null)
+      );
+
+      if (unreadInboundMessages.length > 0) {
+        // Mark each unread message as read
+        const markAsReadPromises = unreadInboundMessages.map(message =>
+          messagesService.markAsRead(message.id).catch(err => {
+            console.error(`Failed to mark message ${message.id} as read:`, err);
+            return null; // Continue with other messages even if one fails
+          })
+        );
+
+        // Wait for all mark-as-read operations to complete
+        const updatedMessages = await Promise.all(markAsReadPromises);
+        
+        // Update the local state with the updated messages
+        const updatedMessagesData = messagesData.map(message => {
+          const updatedMessage = updatedMessages.find(updated => 
+            updated && updated.id === message.id
+          );
+          return updatedMessage || message;
+        });
+        
+        setMessages(updatedMessagesData);
+        
+        // Update conversation status based on remaining unread messages
+        try {
+          const updatedConversation = await conversationsService.updateStatusBasedOnUnreadMessages(conversationId);
+          setConversation(updatedConversation);
+        } catch (statusErr) {
+          console.error('Error updating conversation status:', statusErr);
+          // Don't fail the whole operation if status update fails
+        }
+      }
     } catch (err) {
       setError('Failed to load conversation data');
       console.error('Error loading conversation:', err);
@@ -88,19 +129,38 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, onC
     setError(errorMsg);
     setTimeout(() => setError(null), 5000);
   };
+  const handleMarkConversationAsRead = async () => {
+    if (!conversation || markingAsRead) return;
+
+    setMarkingAsRead(true);
+    try {
+      const updatedMessages = await messagesService.markConversationAsRead(conversation.id);
+      setMessages(updatedMessages);
+      
+      // Update conversation status to 'closed' since all messages are now read
+      try {
+        const updatedConversation = await conversationsService.updateStatusBasedOnUnreadMessages(conversation.id);
+        setConversation(updatedConversation);
+      } catch (statusErr) {
+        console.error('Error updating conversation status:', statusErr);
+        // Don't fail the whole operation if status update fails
+      }
+      
+      setError(null); // Clear any previous errors
+    } catch (err) {
+      setError('Failed to mark conversation as read');
+      console.error('Error marking conversation as read:', err);
+    } finally {
+      setMarkingAsRead(false);
+    }
+  };
+
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
-  };
-
-  const formatMessageTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
   };
 
   if (loading) {
@@ -134,6 +194,21 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, onC
           <p className="m-0 text-gray-600 text-sm">{conversation.customer?.phoneNumber}</p>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleMarkConversationAsRead}
+            disabled={markingAsRead}
+            className="px-3 py-1.5 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+            title="Mark all messages in this conversation as read"
+          >
+            {markingAsRead ? (
+              <>
+                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Marking...
+              </>
+            ) : (
+              'Mark All Read'
+            )}
+          </button>
           <span className={`px-2 py-1 rounded-xl text-xs font-medium uppercase ${
             conversation.status === 'open' 
               ? 'bg-green-100 text-green-800' 
@@ -161,78 +236,8 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, onC
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-5 bg-gray-100">
-        {messages.length === 0 ? (
-          <div className="text-center text-gray-600 mt-10">
-            <p>No messages yet. Start the conversation!</p>
-          </div>
-        ) : (
-          messages.map((message, index) => (
-            <div
-              key={message.id || index}
-              className={`mb-4 flex flex-col ${
-                (message.direction || 'outbound') === 'inbound' ? 'items-start' : 'items-end'
-              }`}
-            >
-              <div className={`max-w-[70%] px-4 py-3 rounded-2xl break-words ${
-                (message.direction || 'outbound') === 'inbound' 
-                  ? 'bg-white rounded-bl-sm' 
-                  : 'bg-blue-500 text-white rounded-br-sm'
-              }`}>
-                {message.mediaUrl ? (
-                  <div className="flex flex-col gap-2">
-                    {message.messageType === 'image' && (
-                      <img 
-                        src={message.mediaUrl} 
-                        alt={message.content || 'Image'} 
-                        className="max-w-[300px] max-h-[200px] rounded-lg object-cover"
-                      />
-                    )}
-                    {message.messageType === 'document' && (
-                      <div className="flex items-center gap-2 p-2 bg-black bg-opacity-10 rounded-lg">
-                        <div className="text-2xl">📄</div>
-                        <a 
-                          href={message.mediaUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-inherit no-underline hover:underline"
-                        >
-                          {message.content || 'Document'}
-                        </a>
-                      </div>
-                    )}
-                    {message.messageType === 'audio' && (
-                      <audio controls className="max-w-[300px] rounded-lg">
-                        <source src={message.mediaUrl} type="audio/mpeg" />
-                        Your browser does not support the audio element.
-                      </audio>
-                    )}
-                    {message.messageType === 'video' && (
-                      <video controls className="max-w-[300px] rounded-lg">
-                        <source src={message.mediaUrl} type="video/mp4" />
-                        Your browser does not support the video element.
-                      </video>
-                    )}
-                    {message.content && (
-                      <p className="m-0 text-sm opacity-90">{message.content}</p>
-                    )}
-                  </div>
-                ) : (
-                  <p className="m-0 leading-relaxed">{message.content}</p>
-                )}
-              </div>
-              <div className={`mt-1 text-xs text-gray-600 ${
-                (message.direction || 'outbound') === 'outbound' ? 'text-right' : ''
-              }`}>
-                <span className="message-time">
-                  {formatMessageTime(message.createdAt || new Date().toISOString())}
-                </span>
-              </div>
-            </div>
-          ))
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+      <MessageList messages={messages} />
+      <div ref={messagesEndRef} />
 
       {/* Media Upload Areas */}
       {showDropZone && conversation && (

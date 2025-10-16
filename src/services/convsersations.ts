@@ -27,6 +27,16 @@ export const conversationsService = {
     const response = await api.patch<Conversation>(`/conversations/${id}/status`, { status });
     return response.data;
   },
+
+  updateStatusBasedOnUnreadMessages: async (conversationId: number): Promise<Conversation> => {
+    // Get unread count for this conversation
+    const unreadResponse = await messagesService.getUnreadCount(conversationId);
+    const newStatus = unreadResponse.count > 0 ? 'open' : 'closed';
+    
+    // Update the conversation status
+    const response = await api.patch<Conversation>(`/conversations/${conversationId}/status`, { status: newStatus });
+    return response.data;
+  },
 };
 
 export const messagesService = {
@@ -42,6 +52,29 @@ export const messagesService = {
     phoneNumber: string;
   }): Promise<Message> => {
     const response = await api.post<Message>('/messages/send', data);
+    return response.data;
+  },
+
+  markAsRead: async (messageId: number): Promise<Message> => {
+    const response = await api.post<Message>(`/messages/${messageId}/read`);
+    return response.data;
+  },
+
+  markConversationAsRead: async (conversationId: number): Promise<Message[]> => {
+    const response = await api.post<Message[]>(`/messages/conversation/${conversationId}/read`);
+    return response.data;
+  },
+
+  // Unread message endpoints
+  getUnreadCount: async (conversationId?: number): Promise<{ count: number }> => {
+    const params = conversationId ? { conversationId } : {};
+    const response = await api.get<{ count: number }>('/messages/unread/count', { params });
+    return response.data;
+  },
+
+  getUnreadMessages: async (conversationId?: number): Promise<Message[]> => {
+    const params = conversationId ? { conversationId } : {};
+    const response = await api.get<Message[]>('/messages/unread', { params });
     return response.data;
   },
 };

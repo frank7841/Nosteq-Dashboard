@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Message } from '../../types';
 import { format } from 'date-fns';
-import { Check, CheckCheck, FileText, Download, Image as ImageIcon } from 'lucide-react';
+import { Check, CheckCheck, FileText, Download, Image as ImageIcon, Copy } from 'lucide-react';
 
 interface MessageBubbleProps {
   message: Message;
@@ -10,6 +10,35 @@ interface MessageBubbleProps {
 export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   const isOutbound = message.direction === 'outbound';
   const hasMedia = message.mediaUrl && message.mediaUrl.trim() !== '';
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyMessage = async () => {
+    if (!message.content) return;
+    
+    try {
+      // Try modern clipboard API first
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(message.content);
+      } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = message.content;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
+      
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy message:', err);
+    }
+  };
 
   const renderMediaContent = () => {
     if (!hasMedia) return null;
@@ -118,14 +147,15 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   };
 
   return (
-    <div className={`flex ${isOutbound ? 'justify-end' : 'justify-start'} mb-3 md:mb-4 px-2 md:px-0`}>
-      <div
-        className={`max-w-[280px] sm:max-w-xs lg:max-w-md px-3 md:px-4 py-2 rounded-lg ${
-          isOutbound
-            ? 'bg-green-500 text-white'
-            : 'bg-white border border-gray-200 text-gray-900'
-        }`}
-      >
+    <div className={`flex ${isOutbound ? 'justify-end' : 'justify-start'} mb-3 md:mb-4 px-2 md:px-0 group`}>
+      <div className="relative">
+        <div
+          className={`max-w-[280px] sm:max-w-xs lg:max-w-md px-3 md:px-4 py-2 rounded-lg ${
+            isOutbound
+              ? 'bg-green-500 text-white'
+              : 'bg-white border border-gray-200 text-gray-900'
+          }`}
+        >
         {/* Render media content first if present */}
         {renderMediaContent()}
         
@@ -139,6 +169,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
           isOutbound ? 'text-green-100' : 'text-gray-500'
         }`}>
           <span className="text-xs">{format(new Date(message.createdAt), 'HH:mm')}</span>
+          {copied && <span className="ml-2 text-green-400">Copied!</span>}
           {isOutbound && (
             <span className="ml-1 flex-shrink-0">
               {message.status === 'read' ? (
@@ -151,6 +182,28 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
             </span>
           )}
         </div>
+        </div>
+        
+        {/* Copy Button - visible on hover */}
+        {message.content && message.content.trim() !== '' && (
+          <button
+            onClick={handleCopyMessage}
+            className={`absolute top-2 right-2 p-1.5 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100 ${
+              copied
+                ? 'bg-green-100 text-green-600'
+                : isOutbound
+                ? 'bg-green-400 hover:bg-green-300 text-white'
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+            }`}
+            title={copied ? 'Copied!' : 'Copy message'}
+          >
+            {copied ? (
+              <Check className="w-3 h-3" />
+            ) : (
+              <Copy className="w-3 h-3" />
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
