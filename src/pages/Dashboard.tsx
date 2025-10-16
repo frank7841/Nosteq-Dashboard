@@ -234,110 +234,114 @@ export const Dashboard: React.FC = () => {
 
   return (
     <Layout selectedConversation={selectedConversation}>
-      <div className="flex h-full relative">
-        {/* Mobile/Tablet Conversations List Overlay */}
-        <div className={`${
-          showConversationList ? 'block' : 'hidden'
-        } md:block absolute md:relative z-10 md:z-auto w-full md:w-80 lg:w-96 bg-white border-r border-gray-200 overflow-hidden flex flex-col h-full`}>
-          <div className="p-3 md:p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Conversations</h2>
-            </div>
-            <div className="mt-2 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <p className="text-xs md:text-sm text-gray-500">
-                  {conversations.length} {viewFilter === 'mine' ? 'assigned to me' : 'total'}
-                </p>
-                {(() => {
-                  const totalUnread = getTotalUnreadCount(
-                    conversations.map(c => ({ id: c.id, messageCount: conversationMessageCounts[c.id] || 0 }))
-                  );
-                  return totalUnread > 0 ? (
-                    <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
-                      {totalUnread} unread
-                    </span>
-                  ) : null;
-                })()}
-              </div>
-              <div className="inline-flex rounded-md shadow-sm" role="group">
-                <button
-                  onClick={() => setViewFilter('all')}
-                  className={`px-2 md:px-3 py-1 text-xs md:text-sm border ${
-                    viewFilter === 'all' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 border-gray-300'
-                  } rounded-l`}
-                >
-                  All
-                </button>
-                <button
-                  onClick={() => setViewFilter('mine')}
-                  className={`px-2 md:px-3 py-1 text-xs md:text-sm border ${
-                    viewFilter === 'mine' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 border-gray-300'
-                  } rounded-r`}
-                >
-                  My
-                </button>
-              </div>
-            </div>
-          </div>
-          <ConversationList
-              conversations={conversations}
-              selectedConversationId={selectedConversation?.id}
-              onSelectConversation={handleSelectConversation}
-              users={users}
-              onAssignConversation={handleAssignConversation}
-              conversationMessageCounts={conversationMessageCounts}
-          />
+  <div className="flex h-full relative">
+    {/* Mobile/Tablet Conversations List Overlay */}
+    <div className={`${
+      showConversationList ? 'block' : 'hidden'
+    } md:block absolute md:relative z-10 md:z-auto w-full md:w-80 lg:w-96 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full`}>
+      <div className="p-3 md:p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Conversations</h2>
         </div>
-
-        {/* Messages Area */}
-        <div className={`${
-          showConversationList ? 'hidden' : 'flex'
-        } md:flex flex-1 flex-col w-full`}>
-          {selectedConversation ? (
-            <>
-              {/* Mobile Header with Back Button */}
-              <div className="md:hidden flex items-center p-3 bg-white border-b border-gray-200">
-                <button
-                  onClick={handleBackToConversations}
-                  className="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors"
-                >
-                  <ArrowLeft size={20} className="text-gray-600" />
-                </button>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">
-                    {selectedConversation.customer.name}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    {selectedConversation.customer.phoneNumber}
-                  </p>
-                </div>
-              </div>
-              
-              <MessageList messages={messages} />
-              <MessageInput
-                onSendMessage={handleSendMessage}
-                disabled={sendingMessage}
-                conversationId={selectedConversation.id}
-                customerId={selectedConversation.customerId}
-                phoneNumber={selectedConversation.customer.phoneNumber}
-                onMediaSent={handleMediaSent}
-              />
-            </>
-          ) : (
-            <div className="flex items-center justify-center h-full bg-gray-50">
-              <div className="text-center px-4">
-                <div className="text-4xl md:text-6xl mb-4">💬</div>
-                <h3 className="text-lg md:text-xl font-semibold text-gray-700 mb-2">
-                  Select a conversation
-                </h3>
-                <p className="text-sm md:text-base text-gray-500">
-                  Choose a conversation from the list to start messaging
-                </p>
-              </div>
-            </div>
-          )}
+        <div className="mt-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+              {conversations.length} {viewFilter === 'mine' ? 'assigned to me' : 'total'}
+            </p>
+            {(() => {
+              const totalUnread = getTotalUnreadCount(
+                conversations.map(c => ({ id: c.id, messageCount: conversationMessageCounts[c.id] || 0 }))
+              );
+              return totalUnread > 0 ? (
+                <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                  {totalUnread} unread
+                </span>
+              ) : null;
+            })()}
+          </div>
+          <div className="inline-flex rounded-md shadow-sm" role="group">
+            <button
+              onClick={() => setViewFilter('all')}
+              className={`px-2 md:px-3 py-1 text-xs md:text-sm border ${
+                viewFilter === 'all' 
+                  ? 'bg-green-600 text-white border-green-600' 
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              } rounded-l transition-colors`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setViewFilter('mine')}
+              className={`px-2 md:px-3 py-1 text-xs md:text-sm border ${
+                viewFilter === 'mine' 
+                  ? 'bg-green-600 text-white border-green-600' 
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+              } rounded-r transition-colors`}
+            >
+              My
+            </button>
+          </div>
         </div>
       </div>
-    </Layout>
+      <ConversationList
+          conversations={conversations}
+          selectedConversationId={selectedConversation?.id}
+          onSelectConversation={handleSelectConversation}
+          users={users}
+          onAssignConversation={handleAssignConversation}
+          conversationMessageCounts={conversationMessageCounts}
+      />
+    </div>
+
+    {/* Messages Area */}
+    <div className={`${
+      showConversationList ? 'hidden' : 'flex'
+    } md:flex flex-1 flex-col w-full`}>
+      {selectedConversation ? (
+        <>
+          {/* Mobile Header with Back Button */}
+          <div className="md:hidden flex items-center p-3 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+            <button
+              onClick={handleBackToConversations}
+              className="mr-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <ArrowLeft size={20} className="text-gray-600 dark:text-gray-400" />
+            </button>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                {selectedConversation.customer.name}
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {selectedConversation.customer.phoneNumber}
+              </p>
+            </div>
+          </div>
+          
+          <MessageList messages={messages} />
+          <MessageInput
+            onSendMessage={handleSendMessage}
+            disabled={sendingMessage}
+            conversationId={selectedConversation.id}
+            customerId={selectedConversation.customerId}
+            phoneNumber={selectedConversation.customer.phoneNumber}
+            onMediaSent={handleMediaSent}
+          />
+        </>
+      ) : (
+        <div className="flex items-center justify-center h-full bg-gray-50 dark:bg-gray-800">
+          <div className="text-center px-4">
+            <div className="text-4xl md:text-6xl mb-4">💬</div>
+            <h3 className="text-lg md:text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Select a conversation
+            </h3>
+            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">
+              Choose a conversation from the list to start messaging
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+</Layout>
   );
 };

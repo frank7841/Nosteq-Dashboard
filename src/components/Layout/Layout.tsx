@@ -11,7 +11,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, selectedConversation }
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       {/* Desktop Sidebar - Hidden on mobile */}
       <div className="hidden lg:block">
         <Sidebar />
@@ -38,7 +38,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, selectedConversation }
           onMenuClick={() => setSidebarOpen(true)}
           showMenuButton={true}
         />
-        <main className="flex-1 overflow-hidden">{children}</main>
+        <main className="flex-1 overflow-hidden bg-white dark:bg-gray-800">
+          {children}
+        </main>
       </div>
     </div>
   );

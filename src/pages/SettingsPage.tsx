@@ -10,7 +10,6 @@ export const SettingsPage: React.FC = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 
-  // State for assignment UI
   const [agents, setAgents] = useState<User[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<number | ''>('');
@@ -43,34 +42,34 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="flex-1 p-3 md:p-6 bg-gray-100">
+      <div className="flex-1 p-3 md:p-6 bg-gray-100 dark:bg-gray-900">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Settings</h1>
+          <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-gray-900 dark:text-gray-100">Settings</h1>
 
           {/* Admin Activities Section */}
           {user?.role === 'admin' ? (
-            <section className="bg-white rounded-lg shadow p-4 md:p-6 mb-4 md:mb-6">
+            <section className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6 mb-4 md:mb-6">
               <div className="flex items-center mb-4">
-                <ShieldCheck className="w-4 md:w-5 h-4 md:h-5 text-green-600 mr-2" />
-                <h2 className="text-base md:text-lg font-semibold">Admin Activities</h2>
+                <ShieldCheck className="w-4 md:w-5 h-4 md:h-5 text-green-600 dark:text-green-500 mr-2" />
+                <h2 className="text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100">Admin Activities</h2>
               </div>
 
-              <div className="border rounded-lg divide-y">
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
                 <div className="p-3 md:p-4 flex flex-col md:flex-row md:items-start md:justify-between">
                   <div className="flex items-start">
-                    <MessageSquare className="w-4 md:w-5 h-4 md:h-5 text-gray-600 mr-2 md:mr-3 mt-0.5 flex-shrink-0" />
+                    <MessageSquare className="w-4 md:w-5 h-4 md:h-5 text-gray-600 dark:text-gray-400 mr-2 md:mr-3 mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
-                      <p className="font-medium text-sm md:text-base">Assign Conversation</p>
-                      <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">
+                      <p className="font-medium text-sm md:text-base text-gray-900 dark:text-gray-100">Assign Conversation</p>
+                      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-3 md:mb-4">
                         Select a conversation and assign it to an agent.
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-3">
                         <div>
-                          <label className="block text-xs md:text-sm font-medium mb-1">Conversation</label>
+                          <label className="block text-xs md:text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Conversation</label>
                           <select
                             value={selectedConversationId}
                             onChange={(e) => setSelectedConversationId(e.target.value ? Number(e.target.value) : '')}
-                            className="w-full border rounded px-2 md:px-3 py-1.5 md:py-2 text-sm"
+                            className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 md:px-3 py-1.5 md:py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                             disabled={loading || submitting}
                           >
                             <option value="">Select conversation…</option>
@@ -82,12 +81,12 @@ export const SettingsPage: React.FC = () => {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-xs md:text-sm font-medium mb-1">Agent</label>
+                          <label className="block text-xs md:text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Agent</label>
                           <div className="relative">
                             <select
                               value={selectedAgentId}
                               onChange={(e) => setSelectedAgentId(e.target.value ? Number(e.target.value) : '')}
-                              className="w-full border rounded px-2 md:px-3 py-1.5 md:py-2 text-sm"
+                              className="w-full border border-gray-300 dark:border-gray-600 rounded px-2 md:px-3 py-1.5 md:py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                               disabled={loading || submitting}
                             >
                               <option value="">Select agent…</option>
@@ -120,7 +119,7 @@ export const SettingsPage: React.FC = () => {
                               }
                             }}
                             disabled={loading || submitting}
-                            className="w-full md:w-auto px-3 md:px-4 py-1.5 md:py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 text-sm touch-manipulation"
+                            className="w-full md:w-auto px-3 md:px-4 py-1.5 md:py-2 bg-green-600 dark:bg-green-700 text-white rounded hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50 text-sm touch-manipulation transition-colors"
                           >
                             {submitting ? (
                               <span className="inline-flex items-center"><Loader2 className="w-3 md:w-4 h-3 md:h-4 mr-1 md:mr-2 animate-spin" />Assigning…</span>
@@ -132,13 +131,13 @@ export const SettingsPage: React.FC = () => {
                       </div>
                       {(error || success) && (
                         <div className="mt-2 md:mt-3">
-                          {error && <p className="text-xs md:text-sm text-red-600">{error}</p>}
-                          {success && <p className="text-xs md:text-sm text-green-700">{success}</p>}
+                          {error && <p className="text-xs md:text-sm text-red-600 dark:text-red-400">{error}</p>}
+                          {success && <p className="text-xs md:text-sm text-green-700 dark:text-green-400">{success}</p>}
                         </div>
                       )}
                     </div>
                   </div>
-                  <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded inline-flex items-center mt-2 md:mt-0 self-start">
+                  <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded inline-flex items-center mt-2 md:mt-0 self-start">
                     {loading ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : null}
                     {loading ? 'Loading…' : 'Ready'}
                   </span>
@@ -146,13 +145,13 @@ export const SettingsPage: React.FC = () => {
               </div>
             </section>
           ) : (
-            <section className="bg-white rounded-lg shadow p-4 md:p-6 mb-4 md:mb-6">
-              <h2 className="text-base md:text-lg font-semibold mb-2">Admin Activities</h2>
-              <p className="text-xs md:text-sm text-gray-600">You do not have permission to view admin activities.</p>
+            <section className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6 mb-4 md:mb-6">
+              <h2 className="text-base md:text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">Admin Activities</h2>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">You do not have permission to view admin activities.</p>
             </section>
           )}
         </div>
-      </div>
+      </div>  
     </Layout>
   );
 };

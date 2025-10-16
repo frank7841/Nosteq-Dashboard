@@ -29,7 +29,7 @@ const UnreadMessageBadge: React.FC<UnreadMessageBadgeProps> = ({
     <div 
       className={`
         ${sizeClasses[size]} 
-        bg-red-500 text-white rounded-full 
+        bg-red-500 dark:bg-red-600 text-white rounded-full 
         flex items-center justify-center 
         font-bold min-w-fit px-1
         animate-pulse
