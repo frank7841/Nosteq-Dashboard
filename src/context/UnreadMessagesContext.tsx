@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useUnreadMessages } from '../hooks/useUnreadMessages';
+import { useAuth } from './AuthContext';
 import type { Message } from '../types';
 
 interface UnreadMessagesContextType {
@@ -31,7 +32,9 @@ interface UnreadMessagesProviderProps {
 }
 
 export const UnreadMessagesProvider: React.FC<UnreadMessagesProviderProps> = ({ children }) => {
-  const unreadHook = useUnreadMessages();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
+  const unreadHook = useUnreadMessages(isAuthenticated);
   const [handledMessageIds, setHandledMessageIds] = useState<Set<number>>(new Set());
 
   // Critical unread messages are those that haven't been handled yet
@@ -54,9 +57,9 @@ export const UnreadMessagesProvider: React.FC<UnreadMessagesProviderProps> = ({ 
     });
   }, [unreadHook.unreadMessages]);
 
-  // Browser notification for critical unread messages
+  // Browser notification for critical unread messages (only when authenticated)
   useEffect(() => {
-    if (hasCriticalUnread && criticalUnreadMessages.length > 0) {
+    if (isAuthenticated && hasCriticalUnread && criticalUnreadMessages.length > 0) {
       // Request notification permission if not granted
       if (Notification.permission === 'default') {
         Notification.requestPermission();
@@ -72,7 +75,7 @@ export const UnreadMessagesProvider: React.FC<UnreadMessagesProviderProps> = ({ 
         });
       }
     }
-  }, [hasCriticalUnread, criticalUnreadMessages]);
+  }, [isAuthenticated, hasCriticalUnread, criticalUnreadMessages]);
 
   const contextValue: UnreadMessagesContextType = {
     ...unreadHook,

@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { Conversation, User } from '../../types';
 import { formatDistanceToNow } from 'date-fns';
 import { useUnreadMessagesContext } from '../../context/UnreadMessagesContext';
-import { messagesService, conversationsService } from '../../services/convsersations';
 import UnreadMessageBadge from '../UnreadMessageBadge';
-import { CheckCircle } from 'lucide-react';
 
 interface ConversationItemProps {
   conversation: Conversation;
@@ -13,44 +11,18 @@ interface ConversationItemProps {
   users: User[];
   onAssign: (userId: number) => void;
   messageCount?: number;
-  onMarkAsRead?: (conversationId: number) => void;
 }
 
 export const ConversationItem: React.FC<ConversationItemProps> = ({
   conversation,
   isSelected,
   onClick,
-  onMarkAsRead,
 }) => {
-  const { getConversationUnreadCount, refreshUnreadData } = useUnreadMessagesContext();
-  const [isMarkingAsRead, setIsMarkingAsRead] = useState(false);
+  const { getConversationUnreadCount } = useUnreadMessagesContext();
   const unreadCount = getConversationUnreadCount(conversation.id);
   const isUnread = unreadCount > 0;
 
-  const handleMarkAsRead = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent conversation selection
-    
-    if (isMarkingAsRead || unreadCount === 0) return;
-    
-    setIsMarkingAsRead(true);
-    try {
-      // Mark all messages in conversation as read
-      await messagesService.markConversationAsRead(conversation.id);
-      
-      // Update conversation status based on unread messages
-      await conversationsService.updateStatusBasedOnUnreadMessages(conversation.id);
-      
-      // Refresh unread data to update UI
-      await refreshUnreadData();
-      
-      // Call parent callback if provided
-      onMarkAsRead?.(conversation.id);
-    } catch (error) {
-      console.error('Error marking conversation as read:', error);
-    } finally {
-      setIsMarkingAsRead(false);
-    }
-  };
+
 
   return (
     <div
@@ -91,22 +63,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
             {formatDistanceToNow(new Date(conversation.lastMessageAt), { addSuffix: true })}
           </span>
           
-          {/* Mark as Read Button - only show if there are unread messages */}
-          {isUnread && (
-            <button
-              onClick={handleMarkAsRead}
-              disabled={isMarkingAsRead}
-              className="flex items-center gap-1 px-2 py-1 text-xs bg-green-500 dark:bg-green-600 text-white rounded hover:bg-green-600 dark:hover:bg-green-500 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
-              title="Mark conversation as read"
-            >
-              {isMarkingAsRead ? (
-                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <CheckCircle size={12} />
-              )}
-              {isMarkingAsRead ? 'Marking...' : 'Mark Read'}
-            </button>
-          )}
+
           
           <span
             className={`px-2 py-1 text-xs rounded-full transition-colors ${

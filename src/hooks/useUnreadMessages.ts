@@ -12,13 +12,21 @@ interface UnreadMessagesHook {
   error: string | null;
 }
 
-export const useUnreadMessages = (): UnreadMessagesHook => {
+export const useUnreadMessages = (isAuthenticated: boolean = false): UnreadMessagesHook => {
   const [totalUnreadCount, setTotalUnreadCount] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const refreshUnreadData = useCallback(async () => {
+    if (!isAuthenticated) {
+      setTotalUnreadCount(0);
+      setUnreadMessages([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -36,7 +44,7 @@ export const useUnreadMessages = (): UnreadMessagesHook => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const getConversationUnreadCount = useCallback((conversationId: number): number => {
     return unreadMessages.filter(message => 
@@ -55,13 +63,21 @@ export const useUnreadMessages = (): UnreadMessagesHook => {
   }, [unreadMessages]);
 
   useEffect(() => {
-    refreshUnreadData();
-    
-    // Set up polling to ensure we never miss unread messages
-    const interval = setInterval(refreshUnreadData, 30000); // Refresh every 30 seconds
-    
-    return () => clearInterval(interval);
-  }, [refreshUnreadData]);
+    if (isAuthenticated) {
+      refreshUnreadData();
+      
+      // Set up polling to ensure we never miss unread messages
+      const interval = setInterval(refreshUnreadData, 30000); // Refresh every 30 seconds
+      
+      return () => clearInterval(interval);
+    } else {
+      // Reset state when not authenticated
+      setTotalUnreadCount(0);
+      setUnreadMessages([]);
+      setLoading(false);
+      setError(null);
+    }
+  }, [refreshUnreadData, isAuthenticated]);
 
   return {
     totalUnreadCount,
