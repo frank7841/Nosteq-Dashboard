@@ -5,6 +5,7 @@ import MediaDropZone from './MediaDropZone';
 import { MessageList } from './Messages/MessageList';
 import type { Message, Conversation } from '../types';
 import { conversationsService, messagesService } from '../services/convsersations';
+import { useUnreadMessagesContext } from '../context/UnreadMessagesContext';
 
 interface ConversationViewProps {
   conversationId: number;
@@ -23,6 +24,7 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, onC
   const [error, setError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { refreshUnreadData } = useUnreadMessagesContext();
 
   useEffect(() => {
     loadConversationData();
@@ -78,6 +80,14 @@ const ConversationView: React.FC<ConversationViewProps> = ({ conversationId, onC
         } catch (statusErr) {
           console.error('Error updating conversation status:', statusErr);
           // Don't fail the whole operation if status update fails
+        }
+        
+        // Refresh unread data in the global context to update counts everywhere
+        try {
+          await refreshUnreadData();
+        } catch (refreshErr) {
+          console.error('Error refreshing unread data:', refreshErr);
+          // Don't fail the whole operation if refresh fails
         }
       }
     } catch (err) {

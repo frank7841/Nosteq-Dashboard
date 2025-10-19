@@ -8,6 +8,7 @@ import { socketService } from '../services/socket';
 import { authService } from '../services/auth';
 import { ArrowLeft } from 'lucide-react';
 import { markConversationAsRead, getTotalUnreadCount } from '../utils/readStatus';
+import { useUnreadMessagesContext } from '../context/UnreadMessagesContext';
 import type { Conversation, Message, User } from '../types';
 
 export const Dashboard: React.FC = () => {
@@ -20,6 +21,7 @@ export const Dashboard: React.FC = () => {
   const [viewFilter, setViewFilter] = useState<'all' | 'mine'>('all');
   const [showConversationList, setShowConversationList] = useState(true);
   const [conversationMessageCounts, setConversationMessageCounts] = useState<{ [conversationId: number]: number }>({});
+  const { refreshUnreadData } = useUnreadMessagesContext();
 
   // Load conversations and users
   useEffect(() => {
@@ -153,8 +155,23 @@ export const Dashboard: React.FC = () => {
       setSelectedConversation(conversation);
       const messages = await loadMessages(conversation.id);
       
-      // Mark conversation as read with current message count
-      markConversationAsRead(conversation.id, messages?.length || 0);
+      // Mark conversation as read using backend API
+      try {
+        await messagesService.markConversationAsRead(conversation.id);
+        
+        // Update conversation status based on remaining unread messages
+        await conversationsService.updateStatusBasedOnUnreadMessages(conversation.id);
+        
+        // Refresh unread data in the global context to update counts everywhere
+        await refreshUnreadData();
+        
+        // Also update local localStorage for UI consistency
+        markConversationAsRead(conversation.id, messages?.length || 0);
+      } catch (readError) {
+        console.error('Error marking conversation as read:', readError);
+        // Fallback to localStorage-only marking if API fails
+        markConversationAsRead(conversation.id, messages?.length || 0);
+      }
       
       // Join new conversation room
       socketService.joinConversation(conversation.id);
