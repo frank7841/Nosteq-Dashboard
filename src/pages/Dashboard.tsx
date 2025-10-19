@@ -152,32 +152,36 @@ export const Dashboard: React.FC = () => {
         socketService.leaveConversation(selectedConversation.id);
       }
 
+      // Immediately set selected conversation and load messages (non-blocking UI)
       setSelectedConversation(conversation);
       const messages = await loadMessages(conversation.id);
       
-      // Mark conversation as read using backend API
-      try {
-        await messagesService.markConversationAsRead(conversation.id);
-        
-        // Update conversation status based on remaining unread messages
-        await conversationsService.updateStatusBasedOnUnreadMessages(conversation.id);
-        
-        // Refresh unread data in the global context to update counts everywhere
-        await refreshUnreadData();
-        
-        // Also update local localStorage for UI consistency
-        markConversationAsRead(conversation.id, messages?.length || 0);
-      } catch (readError) {
-        console.error('Error marking conversation as read:', readError);
-        // Fallback to localStorage-only marking if API fails
-        markConversationAsRead(conversation.id, messages?.length || 0);
-      }
+      // Immediately update localStorage for instant UI feedback
+      markConversationAsRead(conversation.id, messages?.length || 0);
       
       // Join new conversation room
       socketService.joinConversation(conversation.id);
       
       // Hide conversation list on mobile after selection
       setShowConversationList(false);
+      
+      // Mark conversation as read using backend API (run in background)
+      // This runs asynchronously without blocking the UI
+      (async () => {
+        try {
+          await messagesService.markConversationAsRead(conversation.id);
+          
+          // Update conversation status based on remaining unread messages
+          await conversationsService.updateStatusBasedOnUnreadMessages(conversation.id);
+          
+          // Refresh unread data in the global context to update counts everywhere
+          await refreshUnreadData();
+        } catch (readError) {
+          console.error('Error marking conversation as read:', readError);
+          // The localStorage update already happened above, so UI is consistent
+        }
+      })();
+      
     } catch (error) {
       console.error('Error selecting conversation:', error);
     }
