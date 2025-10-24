@@ -76,8 +76,20 @@ export const Dashboard: React.FC = () => {
           [message.conversationId]: (prevCounts[message.conversationId] || 0) + 1
         }));
       }
-      // Refresh the conversations list (e.g., lastMessageAt)
-      loadConversations();
+      
+      // Update only the specific conversation instead of reloading all conversations
+      setConversations(prev => 
+        prev.map(conv => {
+          if (conv.id === message.conversationId) {
+            return {
+              ...conv,
+              lastMessageAt: message.createdAt,
+              lastMessage: message.content
+            };
+          }
+          return conv;
+        })
+      );
     };
 
     const handleNewConversation = (conversation: Conversation) => {
